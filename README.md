@@ -5,7 +5,7 @@ MorelapMenu
 
 >预览图如下：
 
-![image](./preview.png)
+>![image](./preview.png)
 
 
 具体的实现逻辑请看源码，里面有较为详细的注释
