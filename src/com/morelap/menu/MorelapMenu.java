@@ -28,6 +28,7 @@ public class MorelapMenu extends FrameLayout {
     private int mRadius = 300;
     private int mMaxItem = 4;
     private double intervalAngle = 0;
+    private MenuItem mOperationMenu = null;
 
     public MorelapMenu(Context context) {
         super(context);
@@ -37,7 +38,14 @@ public class MorelapMenu extends FrameLayout {
         super(context, attrs);
         mMenus = new ArrayList<MenuItem>();
         setBackgroundColor(Color.GRAY);
+        //add the logo
         
+        MenuItem logo = new MenuItem(getContext());
+        logo.setImageResource(R.drawable.logo);
+        mMenus.add(logo);
+        
+        mOperationMenu = new MenuItem(getContext());
+        mOperationMenu.setImageResource(R.drawable.ic_open);
         //need to set the clickable =true , otherwise , can not listen the touch event
         setClickable(true);
     }
@@ -75,7 +83,15 @@ public class MorelapMenu extends FrameLayout {
         removeAllViews();
         intervalAngle = 90 / (double)itemSize;
         double centerAngle = 90 - (intervalAngle/2);
-        for(int i = 0; i <mMenus.size();i++) {
+        MenuItem logo = mMenus.get(0);
+        logo.setCircleAngle(90+(intervalAngle/2));
+        addView(logo);
+        FrameLayout.LayoutParams logoparams = (FrameLayout.LayoutParams)logo.getLayoutParams();
+        logoparams.width = FrameLayout.LayoutParams.WRAP_CONTENT;
+        logoparams.height = FrameLayout.LayoutParams.WRAP_CONTENT;
+        logo.setLayoutParams(logoparams);
+
+        for(int i = 1; i <mMenus.size();i++) {
             MenuItem item = mMenus.get(i);
             l("centerAngle:"+centerAngle);
             item.setCircleAngle(centerAngle);
@@ -87,6 +103,14 @@ public class MorelapMenu extends FrameLayout {
             item.setLayoutParams(params);
             centerAngle = centerAngle -intervalAngle;
         }
+        
+        //add operation menu
+
+        addView(mOperationMenu);
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mOperationMenu.getLayoutParams();
+        params.width = FrameLayout.LayoutParams.WRAP_CONTENT;
+        params.height = FrameLayout.LayoutParams.WRAP_CONTENT;
+        mOperationMenu.setLayoutParams(params);
     }
 
     // 覆写View.onMeasure回调函数，用于计算所有child view的宽高，这里偷懒没有进行MeasureSpec模式判断
@@ -110,13 +134,11 @@ public class MorelapMenu extends FrameLayout {
 //            if(childView instanceof MenuItem) {
 //                MenuItem menuItem = (MenuItem) childView;
                 double centerAngle = menuItem.getMoveAngle();
-                l("centerAngle:"+centerAngle);
                 //圆弧宽度
                 int arcWidth = (int)(Math.cos(toRadian(centerAngle))*mRadius);
                 int arcHeight = (int)(Math.sin(toRadian(centerAngle))*mRadius);
 
-                l("arcWidth:"+arcWidth);
-                l("arcHeight:"+arcHeight);
+                l("centerAngle:"+centerAngle+"#arcWidth:"+arcWidth+"#"+"arcHeight:"+arcHeight);
                 // 获取在onMeasure中计算的视图尺寸  
                    int measureHeight = menuItem.getMeasuredHeight();
                    int measuredWidth = menuItem.getMeasuredWidth();
@@ -125,9 +147,17 @@ public class MorelapMenu extends FrameLayout {
                    int r = arcWidth;
                    int t = parentHeight - arcHeight;
                    int b = parentHeight - arcHeight + measureHeight;
+                   l("l:"+l+"#r:"+r+"#t:"+arcHeight+"#b:"+b);
                    menuItem.layout(l, t, r, b);
 //            } 
         }
+        //add menu
+        int measureHeight = mOperationMenu.getMeasuredHeight();
+        int measuredWidth = mOperationMenu.getMeasuredWidth();
+        int layoutHeight = getHeight();
+        int operationMenuPadding = 10;
+        mOperationMenu.layout(0+operationMenuPadding, layoutHeight-measureHeight-operationMenuPadding, measuredWidth+operationMenuPadding, layoutHeight-operationMenuPadding);
+//        mOperationMenu.layout(0, layoutHeight-measureHeight, measuredWidth, layoutHeight);
     }
     
     private int startx;
@@ -161,7 +191,7 @@ public class MorelapMenu extends FrameLayout {
                 item.setMoveAngle(item.getCircleAngle() + rotateAngle);
             }
             requestLayout();
-            l("startAngle:"+startAngle);
+            l("#####################");
             break;
 
         case MotionEvent.ACTION_UP:
@@ -183,7 +213,7 @@ public class MorelapMenu extends FrameLayout {
     }
     
     private void adjustMenuPosition(){
-        MenuItem firstItem = mMenus.get(0);
+        MenuItem firstItem = mMenus.get(1);
         MenuItem lastItem = mMenus.get(mMenus.size()-1);
         double moveAngle = 0;
         double firstAngle = 90 - (intervalAngle/2);
@@ -219,10 +249,6 @@ public class MorelapMenu extends FrameLayout {
         //这里记得转化成double,要不然，精确度都没有了
         double radian = Math.atan((menuBottom-x)/(double)y);
         return toAngle(radian);
-    }
-    
-    private void move(int offsetx, int offsety) {
-        
     }
 
     /**
